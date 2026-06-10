@@ -58,18 +58,24 @@ def create_application() -> FastAPI:
     if STATIC_DIR.exists():
         application.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-        # Serve index.html at the root and for any unknown path (SPA fallback)
         @application.get("/", include_in_schema=False)
         async def serve_index():
-            return FileResponse(str(STATIC_DIR / "index.html"))
+            return FileResponse(
+                str(STATIC_DIR / "index.html"),
+                headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+            )
 
         @application.get("/{full_path:path}", include_in_schema=False)
         async def serve_spa(full_path: str):
-            # Try to serve an exact file first (e.g. style.css, app.js)
             requested = STATIC_DIR / full_path
             if requested.exists() and requested.is_file():
-                return FileResponse(str(requested))
-            # Fallback: return index.html for client-side routing
-            return FileResponse(str(STATIC_DIR / "index.html"))
+                # Cache JS/CSS for a short time, never cache HTML
+                ext = requested.suffix.lower()
+                cache = "no-cache, no-store, must-revalidate" if ext == ".html" else "public, max-age=60"
+                return FileResponse(str(requested), headers={"Cache-Control": cache})
+            return FileResponse(
+                str(STATIC_DIR / "index.html"),
+                headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+            )
 
     return application
