@@ -22,32 +22,6 @@ class Settings(BaseSettings):
     PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = 1
     EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 24
 
-    # Database
-    POSTGRES_SERVER: Optional[str] = None
-    POSTGRES_USER: Optional[str] = None
-    POSTGRES_PASSWORD: Optional[str] = None
-    POSTGRES_DB: Optional[str] = None
-    POSTGRES_PORT: int = 5432
-    DATABASE_URL: Optional[str] = None
-
-    @field_validator("DATABASE_URL", mode="before")
-    @classmethod
-    def assemble_db_connection(cls, v: Optional[str], info) -> Optional[str]:
-        if isinstance(v, str) and v.strip():
-            # SQLAlchemy asyncpg requires postgresql+asyncpg:// instead of postgres://
-            if v.startswith("postgres://"):
-                return v.replace("postgres://", "postgresql+asyncpg://", 1)
-            if v.startswith("postgresql://"):
-                return v.replace("postgresql://", "postgresql+asyncpg://", 1)
-            return v
-
-        data = info.data
-        if data.get("POSTGRES_USER"):
-            return (
-                f"postgresql+asyncpg://{data['POSTGRES_USER']}:{data['POSTGRES_PASSWORD']}"
-                f"@{data['POSTGRES_SERVER']}:{data.get('POSTGRES_PORT', 5432)}/{data['POSTGRES_DB']}"
-            )
-        return None
 
     # Redis
     REDIS_HOST: str = "localhost"

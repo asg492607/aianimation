@@ -1,10 +1,5 @@
 fastapi
 uvicorn[standard]
-sqlalchemy[asyncio]
-asyncpg
-alembic
-celery[redis]
-redis
 pydantic
 pydantic-settings
 pydantic[email]
@@ -13,5 +8,5 @@ httpx
 structlog
 python-jose[cryptography]
 passlib[bcrypt]
-boto3
 python-multipart
+boto3

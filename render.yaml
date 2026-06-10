@@ -5,12 +5,6 @@ services:
     plan: free
     healthCheckPath: /docs
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: animateai-db
-          property: connectionString
-      - key: REDIS_HOST
-        value: animateai-redis
       - key: GROQ_API_KEY
         sync: false
       - key: FAL_API_KEY
@@ -24,40 +18,9 @@ services:
       - key: DEBUG
         value: "false"
 
-  - type: worker
-    name: animateai-worker
-    env: docker
-    plan: free
-    dockerCommand: "celery -A tasks.celery_app worker --loglevel=info"
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: animateai-db
-          property: connectionString
-      - key: REDIS_HOST
-        value: animateai-redis
-      - key: GROQ_API_KEY
-        sync: false
-      - key: FAL_API_KEY
-        sync: false
-      - key: ELEVENLABS_API_KEY
-        sync: false
-      - key: SECRET_KEY
-        generateValue: true
-      - key: REFRESH_SECRET_KEY
-        generateValue: true
-
-  - type: redis
-    name: animateai-redis
-    ipAllowList: []
-
   - type: web
     name: animateai-frontend
     env: static
     rootDir: frontend
     buildCommand: ""
     staticPublishPath: .
-
-databases:
-  - name: animateai-db
-    plan: free

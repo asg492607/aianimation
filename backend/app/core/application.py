@@ -5,14 +5,12 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.core.config import settings
 from app.core.logging import configure_logging
-from app.db.session import engine, Base
 from app.api.v1.router import api_router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     configure_logging()
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
     yield
 
 
@@ -22,14 +20,14 @@ def create_application() -> FastAPI:
         description="AI Animation Generator Platform API",
         version=settings.VERSION,
         openapi_url=f"{settings.API_V1_STR}/openapi.json",
-        docs_url=f"{settings.API_V1_STR}/docs",
-        redoc_url=f"{settings.API_V1_STR}/redoc",
+        docs_url="/docs",
+        redoc_url="/redoc",
         lifespan=lifespan,
     )
 
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.BACKEND_CORS_ORIGINS,
+        allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
