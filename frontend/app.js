@@ -136,9 +136,9 @@ if (logBox) {
     const downloadStatus = document.getElementById('downloadStatus');
     if (downloadBtn) {
       downloadBtn.addEventListener('click', async () => {
-        downloadBtn.textContent = '⏳ Generating...';
+        downloadBtn.textContent = '⏳ Generating AI video...';
         downloadBtn.disabled = true;
-        if (downloadStatus) downloadStatus.textContent = 'Rendering your MP4 with FFmpeg (~5 seconds)...';
+        if (downloadStatus) downloadStatus.textContent = '🎬 Generating AI images & animating scenes... this takes 30-60 seconds';
         try {
           const res = await fetch(videoUrl);
           if (!res.ok) throw new Error(`Server error: ${res.status}`);
