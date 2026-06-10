@@ -24,7 +24,7 @@ services:
 
   api:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
@@ -45,7 +45,7 @@ services:
 
   worker-ai:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     command: celery -A tasks.celery_app worker -Q ai,voice,default --loglevel=info
     volumes:
@@ -61,7 +61,7 @@ services:
 
   worker-render:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     command: celery -A tasks.celery_app worker -Q render --concurrency=1 --loglevel=info
     volumes:
@@ -77,7 +77,7 @@ services:
 
   beat:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     command: celery -A tasks.celery_app beat --loglevel=info
     volumes:

@@ -9,10 +9,12 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY requirements.txt .
+# Copy the backend requirements and install
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy the backend code into /app
+COPY backend/ .
 
 # Expose port for FastAPI
 EXPOSE 8000

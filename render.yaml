@@ -2,8 +2,6 @@ services:
   - type: web
     name: animateai-api
     env: docker
-    rootDir: backend
-    dockerfilePath: ./Dockerfile
     plan: free
     healthCheckPath: /docs
     envVars:
@@ -41,8 +39,6 @@ services:
   - type: worker
     name: animateai-worker
     env: docker
-    rootDir: backend
-    dockerfilePath: ./Dockerfile
     plan: free
     dockerCommand: "celery -A tasks.celery_app worker --loglevel=info"
     envVars:
