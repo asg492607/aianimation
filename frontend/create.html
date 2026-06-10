@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Animation - AnimateAI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="logo">AnimateAI</a>
+    <div class="nav-links">
+      <a href="index.html">Dashboard</a>
+      <a href="create.html">Create</a>
+      <a href="#">Settings</a>
+    </div>
+  </nav>
+
+  <main class="container animate-in">
+    <div class="card" style="max-width: 800px; margin: 0 auto;">
+      <h2>Create New Animation</h2>
+      <p>Describe your vision, and our multi-engine AI will handle the script, voice, assets, and rendering.</p>
+      
+      <form id="createForm">
+        <div class="form-group">
+          <label for="title">Project Title</label>
+          <input type="text" id="title" placeholder="e.g. The AI Lawyer" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="prompt">Animation Prompt</label>
+          <textarea id="prompt" rows="5" placeholder="Create a 60 second animation about..." required></textarea>
+        </div>
+        
+        <button type="submit" class="btn" style="width: 100%; text-align: center; font-size: 1.1rem; padding: 1rem;">Generate Magic</button>
+      </form>
+    </div>
+  </main>
+  
+  <script src="app.js"></script>
+</body>
+</html>

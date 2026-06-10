@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Render Monitor - AnimateAI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="logo">AnimateAI</a>
+    <div class="nav-links">
+      <a href="index.html">Dashboard</a>
+      <a href="create.html">Create</a>
+      <a href="#">Settings</a>
+    </div>
+  </nav>
+
+  <main class="container animate-in">
+    <div class="card" style="max-width: 800px; margin: 0 auto;">
+      <h2 id="projectTitle">Generating Animation...</h2>
+      <p>Sit back while the Orchestrator coordinates the AI engines.</p>
+      
+      <div class="progress-container">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+          <span id="currentStatus" style="font-weight: 600; color: var(--primary);">Connecting to Orchestrator...</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 2rem;">
+        <label>System Logs</label>
+        <div class="log-box" id="logBox">
+          > Initializing WebSocket connection...<br>
+        </div>
+      </div>
+      
+      <div id="resultContainer" style="margin-top: 2rem; display: none; text-align: center;">
+        <h3 style="color: #10b981; margin-bottom: 1rem;">Render Complete!</h3>
+        <a href="#" class="btn" id="downloadBtn">Download MP4</a>
+      </div>
+    </div>
+  </main>
+  
+  <script src="app.js"></script>
+</body>
+</html>

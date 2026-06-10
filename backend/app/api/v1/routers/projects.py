@@ -1,27 +1,17 @@
 import uuid
-from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 
-from app.models.project import Project, ProjectStatus
+from app.models.project import Project
 from app.repositories.project_repository import ProjectRepository
-
-# Agents
-from app.agents.orchestrator_agent import OrchestratorAgent
+from tasks.tasks import run_orchestrator_task
 
 router = APIRouter()
-
-
-async def run_ai_generation_pipeline(project_id: uuid.UUID, db: AsyncSession):
-    orchestrator = OrchestratorAgent(db)
-    await orchestrator.run_pipeline(project_id)
-
 
 @router.post("/{project_id}/generate")
 async def generate_project(
     project_id: uuid.UUID,
-    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
     repo = ProjectRepository(db)
@@ -29,6 +19,7 @@ async def generate_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
         
-    background_tasks.add_task(run_ai_generation_pipeline, project_id, db)
+    # Dispatch to Celery
+    run_orchestrator_task.delay(str(project_id))
     
-    return {"message": "Generation pipeline started", "project_id": str(project_id)}
+    return {"message": "Generation pipeline dispatched to Celery", "project_id": str(project_id)}

@@ -383,3 +383,22 @@ def send_notification_task(user_id: str, title: str, message: str, notification_
 
     run_async(_run())
     return {"status": "sent"}
+
+# ── Orchestrator Task ─────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, max_retries=1, name="tasks.tasks.run_orchestrator")
+def run_orchestrator_task(self, project_id: str):
+    async def _run():
+        from app.db.session import AsyncSessionLocal
+        from app.agents.orchestrator_agent import OrchestratorAgent
+        
+        async with AsyncSessionLocal() as db:
+            orchestrator = OrchestratorAgent(db)
+            await orchestrator.run_pipeline(uuid.UUID(project_id))
+            return {"project_id": project_id, "status": "completed"}
+
+    try:
+        return run_async(_run())
+    except Exception as exc:
+        raise self.retry(exc=exc)
+

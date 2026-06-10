@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.project import ProjectStatus
 from app.models.system import AIJob, JobStatus
 from app.repositories.project_repository import ProjectRepository
+from app.api.v1.routers.ws import notify_project_progress
 from app.core.logging import get_logger
 
 # Agents
@@ -39,6 +40,10 @@ class OrchestratorAgent:
         )
         self.db.add(job)
         await self.db.commit()
+        
+        # Broadcast over WebSocket
+        await notify_project_progress(project_id, agent_name, status.value)
+        
         return job
 
     async def run_pipeline(self, project_id: uuid.UUID) -> None:

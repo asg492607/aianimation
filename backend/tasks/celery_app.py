@@ -6,13 +6,7 @@ celery_app = Celery(
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
-        "app.tasks.script_tasks",
-        "app.tasks.scene_tasks",
-        "app.tasks.voice_tasks",
-        "app.tasks.render_tasks",
-        "app.tasks.export_tasks",
-        "app.tasks.cleanup_tasks",
-        "app.tasks.notification_tasks",
+        "tasks.tasks",
     ],
 )
 
@@ -37,11 +31,7 @@ celery_app.conf.update(
         },
     },
     task_routes={
-        "app.tasks.render_tasks.*": {"queue": "render"},
-        "app.tasks.script_tasks.*": {"queue": "ai"},
-        "app.tasks.scene_tasks.*": {"queue": "ai"},
-        "app.tasks.voice_tasks.*": {"queue": "voice"},
-        "app.tasks.export_tasks.*": {"queue": "export"},
+        "tasks.tasks.*": {"queue": "ai"},
     },
     task_queues={
         "default": {"exchange": "default", "routing_key": "default"},
