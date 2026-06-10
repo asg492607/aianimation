@@ -23,6 +23,20 @@
       <p>Describe your vision, and our multi-engine AI will handle the script, voice, assets, and rendering.</p>
       
       <form id="createForm">
+        
+        <div style="margin-bottom: 2rem;">
+          <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span>Or Start with a Template</span>
+            <span style="font-size: 0.8rem; color: var(--primary);">Marketplace</span>
+          </label>
+          <div id="templateContainer" style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem;">
+            <!-- Templates injected via JS -->
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Loading templates...</p>
+          </div>
+        </div>
+
+        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin-bottom: 2rem;">
+
         <div class="form-group">
           <label for="title">Project Title</label>
           <input type="text" id="title" placeholder="e.g. The AI Lawyer" required>

@@ -3,6 +3,39 @@ const API_BASE = 'http://localhost:8000/api/v1';
 // ---- CREATE PAGE LOGIC ----
 const createForm = document.getElementById('createForm');
 if (createForm) {
+  // Load Templates
+  async function loadTemplates() {
+    try {
+      const res = await fetch(`${API_BASE}/templates`);
+      if (!res.ok) throw new Error('Failed to load templates');
+      const templates = await res.json();
+      
+      const container = document.getElementById('templateContainer');
+      container.innerHTML = templates.map(t => `
+        <div class="template-card" style="min-width: 200px; background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 1rem; cursor: pointer; transition: 0.2s;" onclick="applyTemplate('${t.name}', \`${t.prompt_template}\`, '${t.category}')">
+          <img src="${t.thumbnail_url}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;">
+          <h4 style="margin: 0 0 0.25rem 0; font-size: 0.95rem;">${t.name}</h4>
+          <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">${t.description}</p>
+        </div>
+      `).join('');
+    } catch(e) {
+      console.error(e);
+      document.getElementById('templateContainer').innerHTML = '<p>No templates available.</p>';
+    }
+  }
+  
+  window.applyTemplate = function(name, prompt, category) {
+    document.getElementById('title').value = name;
+    document.getElementById('prompt').value = prompt;
+    // Map category to style if possible
+    const styleMap = { "marketing": "Corporate", "explainer": "Legal Explainer", "educational": "Education" };
+    if (styleMap[category]) {
+      document.getElementById('style').value = styleMap[category];
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', loadTemplates);
+
   createForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const title = document.getElementById('title').value;

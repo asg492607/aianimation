@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard - AnimateAI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .metric-card {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .metric-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    .metric-label {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="logo">AnimateAI</a>
+    <div class="nav-links">
+      <a href="index.html">Dashboard</a>
+      <a href="create.html">Create</a>
+      <a href="analytics.html" style="color: var(--primary)">Analytics</a>
+      <a href="#">Settings</a>
+    </div>
+  </nav>
+
+  <main class="container animate-in">
+    <h2>Platform Analytics</h2>
+    <p>Track your usage, render times, and AI generation costs.</p>
+
+    <div class="metrics-grid" id="metricsContainer">
+      <div class="metric-card">
+        <div class="metric-value">...</div>
+        <div class="metric-label">Loading...</div>
+      </div>
+    </div>
+  </main>
+  
+  <script src="app.js"></script>
+  <script>
+    async function loadAnalytics() {
+      try {
+        const response = await fetch(`${API_BASE}/analytics/dashboard`);
+        if (!response.ok) throw new Error("Failed to load metrics");
+        const data = await response.json();
+        
+        const m = data.metrics;
+        document.getElementById('metricsContainer').innerHTML = `
+          <div class="metric-card">
+            <div class="metric-value">${m.total_projects}</div>
+            <div class="metric-label">Total Projects</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">${m.total_videos_generated}</div>
+            <div class="metric-label">Videos Rendered</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">${m.total_render_time_minutes}</div>
+            <div class="metric-label">Render Minutes</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value" style="color: #10b981;">${m.estimated_ai_costs}</div>
+            <div class="metric-label">Estimated API Costs</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">${m.storage_usage_gb}</div>
+            <div class="metric-label">Storage Usage</div>
+          </div>
+        `;
+      } catch (e) {
+        console.error(e);
+        document.getElementById('metricsContainer').innerHTML = `<p style="color: red;">Failed to load analytics data.</p>`;
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadAnalytics);
+  </script>
+</body>
+</html>

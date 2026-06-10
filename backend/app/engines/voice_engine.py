@@ -154,6 +154,50 @@ class GenericTTSAdapter(TTSAdapter):
                 os.unlink(tmp_path)
 
 
+class ElevenLabsAdapter(TTSAdapter):
+    """
+    Integrates with ElevenLabs API for Voice Cloning and high-fidelity TTS.
+    """
+    def __init__(self):
+        self.api_key = settings.ELEVENLABS_API_KEY if hasattr(settings, 'ELEVENLABS_API_KEY') else None
+        
+    def get_engine_name(self) -> str:
+        return "elevenlabs"
+
+    async def synthesize(
+        self,
+        text: str,
+        voice_id: Optional[str] = None,
+        speed: float = 1.0,
+        language: str = "en",
+    ) -> bytes:
+        if not self.api_key:
+            logger.error("elevenlabs_missing_key")
+            raise RuntimeError("ElevenLabs API Key is not configured.")
+            
+        import httpx
+        # We assume voice_id is passed, else use a generic default like 'Rachel'
+        vid = voice_id or "21m00Tcm4TlvDq8ikWAM" 
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{vid}"
+        headers = {
+            "xi-api-key": self.api_key,
+            "Content-Type": "application/json"
+        }
+        data = {
+            "text": text,
+            "model_id": "eleven_monolingual_v1",
+            "voice_settings": {
+                "stability": 0.5,
+                "similarity_boost": 0.5
+            }
+        }
+        
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, json=data, headers=headers, timeout=60.0)
+            resp.raise_for_status()
+            return resp.content
+
+
 class SubtitleGenerator:
     @staticmethod
     def generate_srt(text: str, start_time: float = 0.0, duration: float = 5.0) -> str:
@@ -193,6 +237,9 @@ class VoiceEngine:
 
     def use_coqui(self, model_name: Optional[str] = None):
         self.adapter = CoquiTTSAdapter(model_name or "tts_models/en/ljspeech/tacotron2-DDC")
+
+    def use_elevenlabs(self):
+        self.adapter = ElevenLabsAdapter()
 
     async def generate_voiceover(
         self,
