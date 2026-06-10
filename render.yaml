@@ -1,0 +1,74 @@
+services:
+  - type: web
+    name: animateai-api
+    env: docker
+    plan: free
+    healthCheckPath: /docs
+    envVars:
+      - key: POSTGRES_SERVER
+        fromDatabase:
+          name: animateai-db
+          property: host
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: animateai-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: animateai-db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: animateai-db
+          property: database
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: animateai-db
+          property: port
+      - key: REDIS_HOST
+        value: animateai-redis
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+
+  - type: worker
+    name: animateai-worker
+    env: docker
+    plan: free
+    dockerCommand: "celery -A tasks.celery_app worker --loglevel=info"
+    envVars:
+      - key: POSTGRES_SERVER
+        fromDatabase:
+          name: animateai-db
+          property: host
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: animateai-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: animateai-db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: animateai-db
+          property: database
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: animateai-db
+          property: port
+      - key: REDIS_HOST
+        value: animateai-redis
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+
+  - type: redis
+    name: animateai-redis
+    ipAllowList: []
+
+databases:
+  - name: animateai-db
+    plan: free
