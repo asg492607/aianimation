@@ -7,10 +7,6 @@ from app.core.config import settings
 from app.core.logging import configure_logging
 from app.db.session import engine, Base
 from app.api.v1.router import api_router
-from app.middleware.request_logging import RequestLoggingMiddleware
-from app.middleware.rate_limiting import RateLimitMiddleware
-from app.middleware.security_headers import SecurityHeadersMiddleware
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,9 +27,6 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
 
-    application.add_middleware(SecurityHeadersMiddleware)
-    application.add_middleware(RequestLoggingMiddleware)
-    application.add_middleware(RateLimitMiddleware, calls=100, period=60)
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.BACKEND_CORS_ORIGINS,

@@ -87,6 +87,49 @@ groq_client = GroqClient()
 
 class PromptBuilder:
     @staticmethod
+    def build_director_prompt(prompt: str) -> tuple[str, str]:
+        system = """You are a highly acclaimed Animation Director. Your job is to take a high-level user prompt and plan a multi-engine AI animation project.
+        You must decide the visual style, camera style, number of scenes, and target duration.
+        Always respond with valid JSON only, no markdown formatting."""
+
+        user = f"""Create an animation direction plan for the following concept:
+
+Concept: {prompt}
+
+Respond ONLY with this JSON structure:
+{{
+  "animation_style": "3D Cinematic / Anime / Corporate / etc.",
+  "camera_style": "Dynamic / Static / Cinematic / etc.",
+  "scene_count": 5,
+  "target_duration_seconds": 60,
+  "mood": "Energetic / Somber / Professional / etc.",
+  "director_notes": "Your overall vision for the animation..."
+}}"""
+        return system, user
+
+    @staticmethod
+    def build_character_prompt(script_summary: str) -> tuple[str, str]:
+        system = """You are a Character Designer for an animation project.
+        Extract the main character from the script summary and design their visual profile to ensure consistency across scenes.
+        Always respond with valid JSON only."""
+
+        user = f"""Design the primary character for this script:
+
+Script Summary: {script_summary}
+
+Respond ONLY with this JSON structure:
+{{
+  "name": "Character Name",
+  "hair": "color and style",
+  "outfit": "detailed outfit description",
+  "age": 25,
+  "gender": "male/female/other",
+  "avatar_style": "e.g., Business, Casual, Teacher, Doctor",
+  "description": "Full physical description"
+}}"""
+        return system, user
+
+    @staticmethod
     def build_script_prompt(prompt: str, num_scenes: int = 5) -> tuple[str, str]:
         system = """You are a professional animation scriptwriter and creative director. 
         You create detailed, engaging animation scripts with clear visual directions.
