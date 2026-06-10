@@ -30,43 +30,46 @@ class GenerateRequest(BaseModel):
 
 async def get_ai_scenes(title: str, prompt: str) -> List[dict]:
     """Call Groq to generate cinematic scene descriptions for the video."""
-    try:
-        from groq import Groq
-        client = Groq(api_key=settings.GROQ_API_KEY)
-        response = client.chat.completions.create(
-            model="llama3-8b-8192",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a professional video director. "
-                        "Return ONLY a valid JSON array, absolutely no other text."
-                    ),
-                },
-                {
-                    "role": "user",
-                    "content": (
-                        f'Create 3 cinematic scene descriptions for a video titled: "{title}". '
-                        f'Context: {prompt[:150]}. '
-                        "Return exactly: "
-                        '[{"visual":"10-15 word photorealistic cinematic image prompt","caption":"5-7 word scene caption"},'
-                        '{"visual":"...","caption":"..."},'
-                        '{"visual":"...","caption":"..."}]'
-                    ),
-                },
-            ],
-            max_tokens=400,
-            temperature=0.7,
-        )
-        content = response.choices[0].message.content.strip()
-        start = content.find("[")
-        end = content.rfind("]") + 1
-        if start >= 0 and end > start:
-            scenes = json.loads(content[start:end])
-            if isinstance(scenes, list) and len(scenes) >= 1:
-                return scenes[:3]
-    except Exception as e:
-        print(f"Groq scene generation failed: {e}")
+    if not settings.GROQ_API_KEY:
+        print("GROQ_API_KEY not set — using fallback scenes")
+    else:
+        try:
+            from groq import Groq
+            client = Groq(api_key=settings.GROQ_API_KEY)
+            response = client.chat.completions.create(
+                model="llama3-8b-8192",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional video director. "
+                            "Return ONLY a valid JSON array, absolutely no other text."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f'Create 3 cinematic scene descriptions for a video titled: "{title}". '
+                            f'Context: {prompt[:150]}. '
+                            "Return exactly: "
+                            '[{"visual":"10-15 word photorealistic cinematic image prompt","caption":"5-7 word scene caption"},'
+                            '{"visual":"...","caption":"..."},'
+                            '{"visual":"...","caption":"..."}]'
+                        ),
+                    },
+                ],
+                max_tokens=400,
+                temperature=0.7,
+            )
+            content = response.choices[0].message.content.strip()
+            start = content.find("[")
+            end = content.rfind("]") + 1
+            if start >= 0 and end > start:
+                scenes = json.loads(content[start:end])
+                if isinstance(scenes, list) and len(scenes) >= 1:
+                    return scenes[:3]
+        except Exception as e:
+            print(f"Groq scene generation failed: {e}")
 
     # Fallback scenes when Groq is unavailable
     return [

@@ -88,8 +88,8 @@ class Settings(BaseSettings):
     MINIO_SECURE: bool = False
 
     # Groq AI
-    GROQ_API_KEY: str
-    GROQ_MODEL: str = "llama3-70b-8192"
+    GROQ_API_KEY: Optional[str] = None
+    GROQ_MODEL: str = "llama3-8b-8192"
     GROQ_MAX_TOKENS: int = 4096
     GROQ_TEMPERATURE: float = 0.7
 
