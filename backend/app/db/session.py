@@ -2,16 +2,28 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
 
 
+def _get_database_url() -> str:
+    url = settings.DATABASE_URL
+    if not url:
+        raise RuntimeError(
+            "DATABASE_URL is not configured. "
+            "Please set the DATABASE_URL environment variable on Render."
+        )
+    return url
+
+
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    _get_database_url(),
     echo=settings.DEBUG,
     pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    # NullPool is recommended for serverless/PaaS environments like Render
+    # where the DB connection may be closed between requests
+    poolclass=NullPool,
 )
 
 AsyncSessionLocal = async_sessionmaker(

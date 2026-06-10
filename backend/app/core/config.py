@@ -32,22 +32,22 @@ class Settings(BaseSettings):
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: Optional[str], info) -> str:
-        if isinstance(v, str):
+    def assemble_db_connection(cls, v: Optional[str], info) -> Optional[str]:
+        if isinstance(v, str) and v.strip():
             # SQLAlchemy asyncpg requires postgresql+asyncpg:// instead of postgres://
             if v.startswith("postgres://"):
                 return v.replace("postgres://", "postgresql+asyncpg://", 1)
             if v.startswith("postgresql://"):
                 return v.replace("postgresql://", "postgresql+asyncpg://", 1)
             return v
-            
+
         data = info.data
         if data.get("POSTGRES_USER"):
             return (
                 f"postgresql+asyncpg://{data['POSTGRES_USER']}:{data['POSTGRES_PASSWORD']}"
-                f"@{data['POSTGRES_SERVER']}:{data['POSTGRES_PORT']}/{data['POSTGRES_DB']}"
+                f"@{data['POSTGRES_SERVER']}:{data.get('POSTGRES_PORT', 5432)}/{data['POSTGRES_DB']}"
             )
-        return ""
+        return None
 
     # Redis
     REDIS_HOST: str = "localhost"
