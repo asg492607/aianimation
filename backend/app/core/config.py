@@ -111,6 +111,10 @@ class Settings(BaseSettings):
     GROQ_MAX_TOKENS: int = 4096
     GROQ_TEMPERATURE: float = 0.7
 
+    # Phase 8 Providers
+    FAL_API_KEY: Optional[str] = None
+    ELEVENLABS_API_KEY: Optional[str] = None
+
     # Email
     SMTP_TLS: bool = True
     SMTP_PORT: Optional[int] = 587
