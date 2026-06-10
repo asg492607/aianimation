@@ -1,9 +1,11 @@
 // Dynamically determine the API Base URL based on where the frontend is hosted
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-// IMPORTANT: Once deployed to Render, update the URL below to match your actual animateai-api Render Web Service URL!
 const API_BASE = isLocalhost 
   ? 'http://localhost:8000/api/v1' 
-  : 'https://animateai-api.onrender.com/api/v1';
+  : 'https://aianimation.onrender.com/api/v1';
+const WS_BASE = isLocalhost
+  ? 'ws://localhost:8000/api/v1'
+  : 'wss://aianimation.onrender.com/api/v1';
 
 // ---- CREATE PAGE LOGIC ----
 const createForm = document.getElementById('createForm');
@@ -113,7 +115,7 @@ function connectWebSocket(projectId) {
   // Determine ws protocol based on http
   const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   // Use localhost for local dev, or dynamic host
-  const wsUrl = `ws://localhost:8000/api/v1/ws/projects/${projectId}?token=${token}`;
+  const wsUrl = `${WS_BASE}/ws/projects/${projectId}?token=${token}`;
   
   const ws = new WebSocket(wsUrl);
 
