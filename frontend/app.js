@@ -104,6 +104,13 @@ if (logBox) {
   if (!projectId) {
     window.location.href = 'index.html';
   } else {
+    // Wire the download button to the real backend endpoint
+    const downloadBtn = document.getElementById('downloadBtn');
+    if (downloadBtn) {
+      downloadBtn.href = `${API_BASE}/projects/${projectId}/download`;
+      downloadBtn.target = '_blank';
+      downloadBtn.download = '';
+    }
     connectWebSocket(projectId);
   }
 }
