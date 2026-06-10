@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.media import Asset, AssetType, AssetSource
 from app.models.script import Scene
+from app.engines.image_engine import ImageEngine
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -26,24 +27,32 @@ class AssetAgent:
         scenes = list(result.scalars().all())
         
         assets = []
+        engine = ImageEngine().get_adapter()
+        
         for scene in scenes:
-            # MVP: We just create metadata records.
-            # In the future, this calls FLUX/ComfyUI/Stable Diffusion
+            file_name = f"{scene.id}_bg.png"
+            file_path = f"media/assets/{file_name}"
+            
+            # 2. Generate Image
+            prompt = scene.visual_description or "Cinematic scene"
+            await engine.generate_image(prompt, file_path)
+            
+            # 3. Create Record
             asset = Asset(
                 project_id=project_id,
                 scene_id=scene.id,
                 name=f"scene_{scene.scene_number}_bg",
-                file_url="mock_url.png", # To be generated
-                file_key=f"{scene.id}_bg.png",
+                file_url=file_path, 
+                file_key=file_name,
                 content_type="image/png",
                 asset_type=AssetType.BACKGROUND,
                 source=AssetSource.GENERATED,
-                generation_prompt=scene.visual_description,
-                meta={"status": "pending_generation"} # Mark as pending for future workers
+                generation_prompt=prompt,
+                meta={"status": "completed"}
             )
             self.db.add(asset)
             assets.append(asset)
-            logger.info("asset_agent_planned", scene_id=str(scene.id))
+            logger.info("asset_agent_generated", scene_id=str(scene.id))
 
         await self.db.commit()
         return assets

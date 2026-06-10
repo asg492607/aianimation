@@ -73,11 +73,25 @@ class FFmpegRenderEngine:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             if frame.image_path and os.path.exists(frame.image_path):
-                inputs.extend(["-i", frame.image_path])
-                filter_parts.append(
-                    f"[0:v]scale={self.config.width}:{self.config.height},"
-                    f"setsar=1,fps={self.config.fps}[v0]"
-                )
+                inputs.extend(["-loop", "1", "-i", frame.image_path])
+                
+                # Apply zoompan if transition_in has a camera style, or fallback to static scale
+                # For MVP, we will do a slow zoom in if "zoom" is in the style, or slow pan if "pan"
+                if "zoom in" in frame.transition_in.lower():
+                    # Zoom in from 1x to 1.5x
+                    filter_parts.append(
+                        f"[0:v]scale=8000:-1,zoompan=z='min(zoom+0.0015,1.5)':d={int(frame.duration * self.config.fps)}:s={self.config.width}x{self.config.height}:fps={self.config.fps}[v0]"
+                    )
+                elif "pan right" in frame.transition_in.lower():
+                    filter_parts.append(
+                        f"[0:v]scale=8000:-1,zoompan=z='1.2':x='x+2':y='y':d={int(frame.duration * self.config.fps)}:s={self.config.width}x{self.config.height}:fps={self.config.fps}[v0]"
+                    )
+                else:
+                    filter_parts.append(
+                        f"[0:v]scale={self.config.width}:{self.config.height},"
+                        f"setsar=1,fps={self.config.fps}[v0]"
+                    )
+                    
                 video_map = "[v0]"
             else:
                 color = frame.background_color.lstrip("#")
