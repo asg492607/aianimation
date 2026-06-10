@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "production"
 
     # Security
-    SECRET_KEY: str
-    REFRESH_SECRET_KEY: str
+    SECRET_KEY: str = "super_secret_key_change_me"
+    REFRESH_SECRET_KEY: str = "super_secret_refresh_key_change_me"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
