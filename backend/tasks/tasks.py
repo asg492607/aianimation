@@ -159,9 +159,25 @@ def render_project_task(self, render_job_id: str):
             start_time = time.time()
 
             try:
+                # Resolve Render Profile from Project
+                from app.repositories.project_repository import ProjectRepository
+                project_repo = ProjectRepository(db)
+                project = await project_repo.get(render_job.project_id)
+                
+                profile_name = project.meta.get("render_profile", "YouTube 1080p") if project and project.meta else "YouTube 1080p"
+                
+                # Setup default resolutions based on profile
+                resolution = "1920x1080"
+                fps = 30
+                if "TikTok" in profile_name or "Instagram Reel" in profile_name:
+                    resolution = "1080x1920"
+                    fps = 60
+                elif "Presentation" in profile_name:
+                    resolution = "1280x720"
+
                 config = RenderConfig(
-                    resolution=render_job.resolution or "1920x1080",
-                    fps=render_job.fps,
+                    resolution=render_job.resolution or resolution,
+                    fps=render_job.fps or fps,
                     format=render_job.format,
                 )
                 engine = FFmpegRenderEngine(config)

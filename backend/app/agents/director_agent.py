@@ -24,7 +24,8 @@ class DirectorAgent:
         project = await self.project_repo.update(project_id, {"status": ProjectStatus.GENERATING})
         
         # 2. Run Engine
-        plan_data = await self.engine.generate_project_plan(project.prompt)
+        style = project.meta.get("requested_style", "3D Cinematic") if project.meta else "3D Cinematic"
+        plan_data = await self.engine.generate_project_plan(project.prompt, style)
         
         # 3. Save Plan to Project Meta
         current_meta = project.meta or {}

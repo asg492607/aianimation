@@ -87,7 +87,7 @@ groq_client = GroqClient()
 
 class PromptBuilder:
     @staticmethod
-    def build_director_prompt(prompt: str) -> tuple[str, str]:
+    def build_director_prompt(prompt: str, style: str = "3D Cinematic") -> tuple[str, str]:
         system = """You are a highly acclaimed Animation Director. Your job is to take a high-level user prompt and plan a multi-engine AI animation project.
         You must decide the visual style, camera style, number of scenes, and target duration.
         Always respond with valid JSON only, no markdown formatting."""
@@ -98,7 +98,7 @@ Concept: {prompt}
 
 Respond ONLY with this JSON structure:
 {{
-  "animation_style": "3D Cinematic / Anime / Corporate / etc.",
+  "animation_style": "{style}",
   "camera_style": "Dynamic / Static / Cinematic / etc.",
   "scene_count": 5,
   "target_duration_seconds": 60,

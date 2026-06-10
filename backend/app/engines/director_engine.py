@@ -12,8 +12,8 @@ class DirectorEngine:
     style, scene count, duration, and overall vision.
     """
     
-    async def generate_project_plan(self, prompt: str) -> dict[str, Any]:
-        system_prompt, user_prompt = PromptBuilder.build_director_prompt(prompt)
+    async def generate_project_plan(self, prompt: str, style: str = "3D Cinematic") -> dict[str, Any]:
+        system_prompt, user_prompt = PromptBuilder.build_director_prompt(prompt, style)
         
         logger.info("director_engine_planning", prompt=prompt[:100])
         

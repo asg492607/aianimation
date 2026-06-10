@@ -7,6 +7,8 @@ if (createForm) {
     e.preventDefault();
     const title = document.getElementById('title').value;
     const prompt = document.getElementById('prompt').value;
+    const style = document.getElementById('style').value;
+    const profile = document.getElementById('profile').value;
     const btn = createForm.querySelector('button');
     
     btn.textContent = 'Initializing...';
@@ -21,7 +23,14 @@ if (createForm) {
       const res = await fetch(`${API_BASE}/projects/${projectId}/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, prompt })
+        body: JSON.stringify({ 
+          title, 
+          prompt,
+          meta: {
+            requested_style: style,
+            render_profile: profile
+          }
+        })
       });
 
       if (res.ok) {
