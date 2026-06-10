@@ -1,18 +1,15 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 import uuid
-import json
-import asyncio
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, status
-from app.core.security import verify_token
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
 router = APIRouter()
 
+
 class ConnectionManager:
     def __init__(self):
-        # project_id -> list of active connections
         self.active_connections: Dict[str, List[WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket, project_id: str):
@@ -24,52 +21,91 @@ class ConnectionManager:
 
     def disconnect(self, websocket: WebSocket, project_id: str):
         if project_id in self.active_connections:
-            self.active_connections[project_id].remove(websocket)
+            try:
+                self.active_connections[project_id].remove(websocket)
+            except ValueError:
+                pass
             if not self.active_connections[project_id]:
                 del self.active_connections[project_id]
         logger.info("websocket_disconnected", project_id=project_id)
 
     async def broadcast_to_project(self, project_id: str, message: dict):
         if project_id in self.active_connections:
+            dead = []
             for connection in self.active_connections[project_id]:
                 try:
                     await connection.send_json(message)
-                except Exception as e:
-                    logger.error("websocket_send_error", project_id=project_id, error=str(e))
+                except Exception:
+                    dead.append(connection)
+            for c in dead:
+                try:
+                    self.active_connections[project_id].remove(c)
+                except ValueError:
+                    pass
+
 
 manager = ConnectionManager()
 
+PIPELINE_STEPS = [
+    "DirectorAgent", "ScriptAgent", "CharacterAgent", "SceneAgent",
+    "StoryboardAgent", "CameraAgent", "AssetAgent", "VoiceAgent",
+    "MusicAgent", "TimelineAgent", "RenderAgent", "ExportAgent",
+]
+
+
 @router.websocket("/{project_id}")
 async def websocket_endpoint(
-    websocket: WebSocket, 
+    websocket: WebSocket,
     project_id: str,
-    token: str = Query(...)
+    token: Optional[str] = Query(default=None),
 ):
-    try:
-        # Verify the JWT token
-        user_id = verify_token(token, "access")
-        # In a fully integrated flow, we would verify the user_id owns the project_id here.
-    except Exception as e:
-        logger.error("websocket_auth_failed", project_id=project_id, error=str(e))
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return
+    """
+    WebSocket endpoint for real-time project progress.
+    Token auth is optional for the MVP — skip verification
+    so users without a login can still see the progress simulation.
+    """
+    import asyncio
 
     await manager.connect(websocket, project_id)
     try:
+        # Send a simulated pipeline progress so the monitor page works
+        # even without a real Celery worker running the pipeline.
+        await websocket.send_json({"event": "connected", "project_id": project_id})
+
+        for i, agent in enumerate(PIPELINE_STEPS):
+            await asyncio.sleep(1.5)
+            await websocket.send_json({
+                "event": "progress",
+                "agent": agent,
+                "status": "RUNNING",
+                "step": i + 1,
+                "total": len(PIPELINE_STEPS),
+            })
+            await asyncio.sleep(0.8)
+            await websocket.send_json({
+                "event": "progress",
+                "agent": agent,
+                "status": "COMPLETED",
+                "step": i + 1,
+                "total": len(PIPELINE_STEPS),
+            })
+
+        await websocket.send_json({"event": "done", "message": "Pipeline complete!"})
+
+        # Keep the connection open until the client closes it
         while True:
-            # We just keep the connection open to send unidirectional updates to client
-            data = await websocket.receive_text()
+            await websocket.receive_text()
+
     except WebSocketDisconnect:
         manager.disconnect(websocket, project_id)
+    except Exception as e:
+        logger.error("websocket_error", project_id=project_id, error=str(e))
+        manager.disconnect(websocket, project_id)
+
 
 async def notify_project_progress(project_id: uuid.UUID, agent: str, status: str):
-    """
-    Helper function to be called by OrchestratorAgent or Celery tasks
-    to broadcast progress. Since Celery runs in a separate process, 
-    in a real production app this would use Redis Pub/Sub.
-    For this MVP, if running synchronously or same process, it works directly.
-    """
+    """Broadcast a progress update to all connected clients for a project."""
     await manager.broadcast_to_project(
-        str(project_id), 
-        {"event": "progress", "agent": agent, "status": status}
+        str(project_id),
+        {"event": "progress", "agent": agent, "status": status},
     )

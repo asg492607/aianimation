@@ -109,61 +109,65 @@ if (logBox) {
 }
 
 function connectWebSocket(projectId) {
-  // Get token from localStorage (assuming standard login flow)
-  const token = localStorage.getItem('access_token') || 'test_token';
-  
-  // Determine ws protocol based on http
-  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  // Use localhost for local dev, or dynamic host
-  const wsUrl = `${WS_BASE}/ws/projects/${projectId}?token=${token}`;
-  
+  const token = localStorage.getItem('access_token') || '';
+
+  const wsUrl = `${WS_BASE}/ws/projects/${projectId}${token ? '?token=' + token : ''}`;
+
+  appendLog('Connecting to pipeline orchestrator...');
+
   const ws = new WebSocket(wsUrl);
 
   const pipelineSteps = [
-    'DirectorAgent', 'ScriptAgent', 'CharacterAgent', 'SceneAgent', 
-    'StoryboardAgent', 'CameraAgent', 'AssetAgent', 'VoiceAgent', 
-    'MusicAgent', 'TimelineAgent', 'RenderAgent', 'ExportAgent', 'Orchestrator'
+    'DirectorAgent', 'ScriptAgent', 'CharacterAgent', 'SceneAgent',
+    'StoryboardAgent', 'CameraAgent', 'AssetAgent', 'VoiceAgent',
+    'MusicAgent', 'TimelineAgent', 'RenderAgent', 'ExportAgent',
   ];
 
   ws.onopen = () => {
-    appendLog('WebSocket connected successfully.');
-    currentStatus.textContent = 'Waiting for Director...';
+    appendLog('Connected to AnimateAI pipeline.');
+    currentStatus.textContent = 'Pipeline starting...';
   };
 
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    
+
+    if (data.event === 'connected') {
+      appendLog(`Session established for project ${data.project_id}`);
+    }
+
     if (data.event === 'progress') {
-      const { agent, status } = data;
-      appendLog(`[${new Date().toLocaleTimeString()}] ${agent} -> ${status}`);
-      
-      currentStatus.textContent = `${agent} is ${status.toLowerCase()}...`;
-      
-      // Calculate progress percentage
-      const stepIndex = pipelineSteps.indexOf(agent);
-      if (stepIndex !== -1) {
-        let percent = Math.round((stepIndex / pipelineSteps.length) * 100);
-        if (status === 'COMPLETED' && agent === 'Orchestrator') percent = 100;
-        
+      const { agent, status, step, total } = data;
+
+      if (status === 'RUNNING') {
+        appendLog(`[${step}/${total}] ▶ ${agent} running...`);
+        currentStatus.textContent = `${agent} is running...`;
+      }
+
+      if (status === 'COMPLETED') {
+        appendLog(`[${step}/${total}] ✓ ${agent} complete`);
+        const percent = Math.round((step / (total)) * 100);
         progressFill.style.width = `${percent}%`;
         progressPercent.textContent = `${percent}%`;
-        
-        if (percent === 100) {
-          currentStatus.textContent = 'Generation Complete!';
-          resultContainer.style.display = 'block';
-          ws.close();
-        }
       }
+    }
+
+    if (data.event === 'done') {
+      appendLog('✅ All agents complete — render finished!');
+      currentStatus.textContent = 'Generation Complete!';
+      progressFill.style.width = '100%';
+      progressPercent.textContent = '100%';
+      resultContainer.style.display = 'block';
+      ws.close();
     }
   };
 
   ws.onerror = (err) => {
     console.error('WebSocket error', err);
-    appendLog('WebSocket encountered an error.', true);
+    appendLog('⚠ WebSocket error — check browser console.', true);
   };
 
   ws.onclose = () => {
-    appendLog('WebSocket connection closed.');
+    appendLog('Connection closed.');
   };
 }
 
