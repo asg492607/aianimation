@@ -3,7 +3,7 @@ services:
     name: animateai-api
     env: docker
     plan: free
-    healthCheckPath: /docs
+    healthCheckPath: /health
     envVars:
       - key: GROQ_API_KEY
         sync: false

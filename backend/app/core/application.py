@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.logging import configure_logging
@@ -23,7 +24,17 @@ def create_application() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
         lifespan=lifespan,
+        redirect_slashes=True,
     )
+
+    # Root health check
+    @application.get("/", tags=["health"])
+    async def root():
+        return {"status": "ok", "service": settings.PROJECT_NAME, "version": settings.VERSION}
+
+    @application.get("/health", tags=["health"])
+    async def health():
+        return {"status": "ok"}
 
     application.add_middleware(
         CORSMiddleware,

@@ -13,7 +13,7 @@ if (createForm) {
   // Load Templates
   async function loadTemplates() {
     try {
-      const res = await fetch(`${API_BASE}/templates`);
+      const res = await fetch(`${API_BASE}/templates/`);
       if (!res.ok) throw new Error('Failed to load templates');
       const templates = await res.json();
       
