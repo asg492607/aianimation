@@ -17,10 +17,3 @@ services:
         generateValue: true
       - key: DEBUG
         value: "false"
-
-  - type: web
-    name: animateai-frontend
-    env: static
-    rootDir: frontend
-    buildCommand: ""
-    staticPublishPath: .
