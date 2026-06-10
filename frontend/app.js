@@ -104,13 +104,63 @@ if (logBox) {
   if (!projectId) {
     window.location.href = 'index.html';
   } else {
-    // Wire the download button to the real backend endpoint
-    const downloadBtn = document.getElementById('downloadBtn');
-    if (downloadBtn) {
-      downloadBtn.href = `${API_BASE}/projects/${projectId}/download`;
-      downloadBtn.target = '_blank';
-      downloadBtn.download = '';
+    const videoUrl = `${API_BASE}/projects/${projectId}/download`;
+
+    // ---- Preview button: load video into <video> player ----
+    const previewBtn = document.getElementById('previewBtn');
+    const videoPreview = document.getElementById('videoPreview');
+    if (previewBtn && videoPreview) {
+      previewBtn.addEventListener('click', async () => {
+        previewBtn.textContent = '⏳ Loading preview...';
+        previewBtn.disabled = true;
+        try {
+          const res = await fetch(videoUrl);
+          if (!res.ok) throw new Error(`Server error: ${res.status}`);
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          videoPreview.src = blobUrl;
+          videoPreview.style.display = 'block';
+          videoPreview.play();
+          previewBtn.textContent = '▶ Preview Video';
+          previewBtn.disabled = false;
+        } catch (err) {
+          previewBtn.textContent = '▶ Preview Video';
+          previewBtn.disabled = false;
+          document.getElementById('downloadStatus').textContent = 'Preview failed: ' + err.message;
+        }
+      });
     }
+
+    // ---- Download button: fetch blob and trigger save ----
+    const downloadBtn = document.getElementById('downloadBtn');
+    const downloadStatus = document.getElementById('downloadStatus');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', async () => {
+        downloadBtn.textContent = '⏳ Generating...';
+        downloadBtn.disabled = true;
+        if (downloadStatus) downloadStatus.textContent = 'Rendering your MP4 with FFmpeg (~5 seconds)...';
+        try {
+          const res = await fetch(videoUrl);
+          if (!res.ok) throw new Error(`Server error: ${res.status}`);
+          const blob = await res.blob();
+          // Create a temp anchor and click it to save the file
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'AnimateAI_video.mp4';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          downloadBtn.textContent = '⬇ Download MP4';
+          downloadBtn.disabled = false;
+          if (downloadStatus) downloadStatus.textContent = '✅ Download started!';
+        } catch (err) {
+          downloadBtn.textContent = '⬇ Download MP4';
+          downloadBtn.disabled = false;
+          if (downloadStatus) downloadStatus.textContent = '❌ Error: ' + err.message;
+        }
+      });
+    }
+
     connectWebSocket(projectId);
   }
 }

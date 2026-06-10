@@ -18,7 +18,7 @@
   </nav>
 
   <main class="container animate-in">
-    <div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card" style="max-width: 860px; margin: 0 auto;">
       <h2 id="projectTitle">Generating Animation...</h2>
       <p>Sit back while the Orchestrator coordinates the AI engines.</p>
       
@@ -39,9 +39,26 @@
         </div>
       </div>
       
-      <div id="resultContainer" style="margin-top: 2rem; display: none; text-align: center;">
-        <h3 style="color: #10b981; margin-bottom: 1rem;">Render Complete!</h3>
-        <a href="#" class="btn" id="downloadBtn">Download MP4</a>
+      <!-- Result section — shown when pipeline completes -->
+      <div id="resultContainer" style="margin-top: 2rem; display: none;">
+        <h3 style="color: #10b981; margin-bottom: 1rem; text-align:center;">✅ Render Complete!</h3>
+
+        <!-- Video preview player -->
+        <video id="videoPreview" controls
+          style="width:100%; border-radius:12px; background:#000; margin-bottom:1.5rem; display:none;">
+          Your browser does not support the video tag.
+        </video>
+
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+          <button id="previewBtn" class="btn" style="background: var(--accent);">
+            ▶ Preview Video
+          </button>
+          <button id="downloadBtn" class="btn">
+            ⬇ Download MP4
+          </button>
+        </div>
+
+        <p id="downloadStatus" style="text-align:center; margin-top:1rem; font-size:0.85rem; color:var(--text-muted);"></p>
       </div>
     </div>
   </main>
