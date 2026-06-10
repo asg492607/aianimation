@@ -1,4 +1,9 @@
-const API_BASE = 'http://localhost:8000/api/v1';
+// Dynamically determine the API Base URL based on where the frontend is hosted
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// IMPORTANT: Once deployed to Render, update the URL below to match your actual animateai-api Render Web Service URL!
+const API_BASE = isLocalhost 
+  ? 'http://localhost:8000/api/v1' 
+  : 'https://animateai-api.onrender.com/api/v1';
 
 // ---- CREATE PAGE LOGIC ----
 const createForm = document.getElementById('createForm');

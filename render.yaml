@@ -3,6 +3,7 @@ services:
     name: animateai-api
     env: docker
     rootDir: backend
+    dockerfilePath: ./Dockerfile
     plan: free
     healthCheckPath: /docs
     envVars:
@@ -37,6 +38,7 @@ services:
     name: animateai-worker
     env: docker
     rootDir: backend
+    dockerfilePath: ./Dockerfile
     plan: free
     dockerCommand: "celery -A tasks.celery_app worker --loglevel=info"
     envVars:
@@ -70,6 +72,13 @@ services:
   - type: redis
     name: animateai-redis
     ipAllowList: []
+
+  - type: web
+    name: animateai-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: ""
+    staticPublishPath: .
 
 databases:
   - name: animateai-db
