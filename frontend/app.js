@@ -60,10 +60,13 @@ if (logBox) {
 }
 
 function connectWebSocket(projectId) {
+  // Get token from localStorage (assuming standard login flow)
+  const token = localStorage.getItem('access_token') || 'test_token';
+  
   // Determine ws protocol based on http
   const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   // Use localhost for local dev, or dynamic host
-  const wsUrl = `ws://localhost:8000/api/v1/ws/projects/${projectId}`;
+  const wsUrl = `ws://localhost:8000/api/v1/ws/projects/${projectId}?token=${token}`;
   
   const ws = new WebSocket(wsUrl);
 

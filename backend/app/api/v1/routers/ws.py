@@ -2,7 +2,8 @@ from typing import Dict, List
 import uuid
 import json
 import asyncio
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, status
+from app.core.security import verify_token
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -39,7 +40,20 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 @router.websocket("/{project_id}")
-async def websocket_endpoint(websocket: WebSocket, project_id: str):
+async def websocket_endpoint(
+    websocket: WebSocket, 
+    project_id: str,
+    token: str = Query(...)
+):
+    try:
+        # Verify the JWT token
+        user_id = verify_token(token, "access")
+        # In a fully integrated flow, we would verify the user_id owns the project_id here.
+    except Exception as e:
+        logger.error("websocket_auth_failed", project_id=project_id, error=str(e))
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
     await manager.connect(websocket, project_id)
     try:
         while True:
